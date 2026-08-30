@@ -13,3 +13,11 @@ services:
         sync: false
       - key: LLM_API_KEY
         sync: false
+
+  - type: web
+    name: insightx-ml
+    runtime: python
+    rootDir: ML
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn ml_service.app:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
