@@ -73,9 +73,49 @@
   animation: shiny 6s linear infinite;
 }
 
+/* Calm, professional workspace background — intentionally static. */
+.insightx-background {
+  background: #050b16;
+}
+
+.insightx-background__grid {
+  position: absolute;
+  inset: 0;
+  opacity: 0.24;
+  background-image:
+    linear-gradient(rgba(148, 163, 184, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.055) 1px, transparent 1px);
+  background-size: 52px 52px;
+  mask-image: linear-gradient(to bottom, black, transparent 88%);
+}
+
+.insightx-background__glow {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(110px);
+  opacity: 0.2;
+}
+
+.insightx-background__glow--top {
+  width: min(52vw, 740px);
+  height: min(52vw, 740px);
+  top: -28vw;
+  right: -10vw;
+  background: #2b62b6;
+}
+
+.insightx-background__glow--bottom {
+  width: min(42vw, 580px);
+  height: min(42vw, 580px);
+  bottom: -24vw;
+  left: -12vw;
+  background: #1d4e89;
+  opacity: 0.12;
+}
+
 /* Custom Liquid-Glass card treatment — semi-transparent so 3D background shows through */
 .liquid-glass {
-  background: rgba(12, 12, 12, 0.35);
+  background: rgba(11, 20, 35, 0.78);
   backdrop-filter: blur(18px) saturate(1.4);
   -webkit-backdrop-filter: blur(18px) saturate(1.4);
   border: none;
@@ -108,7 +148,7 @@
 
 /* Dashboard blocks — transparent frosted glass with subtle glowing borders */
 .glass-block {
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(11, 20, 35, 0.72);
   backdrop-filter: blur(20px) saturate(1.4);
   -webkit-backdrop-filter: blur(20px) saturate(1.4);
   box-shadow:
@@ -123,7 +163,7 @@
 .glass-block-03,
 .glass-block-04,
 .glass-block-05 {
-  background: rgba(255, 255, 255, 0.015) !important;
+  background: rgba(11, 20, 35, 0.72) !important;
 }
 
 .glass-block-01 {
