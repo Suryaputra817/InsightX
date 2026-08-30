@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: insightx-api
+    runtime: node
+    rootDir: backend
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+      - key: MONGO_URI
+        sync: false
+      - key: LLM_API_KEY
+        sync: false
