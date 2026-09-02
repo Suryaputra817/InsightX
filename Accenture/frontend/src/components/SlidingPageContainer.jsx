@@ -1,6 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
+
 import { ChevronLeft, ChevronRight, Layers, Compass } from 'lucide-react';
 import { NAV_ROUTES, getRouteIndex } from './FloatingNavigation';
 

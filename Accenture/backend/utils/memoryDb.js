@@ -290,5 +290,50 @@ module.exports = {
       act.timeline.push({ status, timestamp: new Date() });
     }
     return act;
+  },
+
+  addCustomInvestigation: (data) => {
+    if (!data || !data.investigation) return null;
+    const inv = data.investigation;
+    
+    // Check if already exists
+    const idx = memoryDb.investigations.findIndex(i => i._id === inv._id);
+    if (idx !== -1) {
+      memoryDb.investigations[idx] = inv;
+    } else {
+      memoryDb.investigations.unshift(inv);
+    }
+
+    // Attach custom payload items
+    if (data.evidence && Array.isArray(data.evidence)) {
+      data.evidence.forEach(e => {
+        memoryDb.evidence.unshift({ ...e, investigationId: inv._id });
+      });
+    }
+
+    if (data.hypotheses && Array.isArray(data.hypotheses)) {
+      data.hypotheses.forEach(h => {
+        memoryDb.hypotheses.unshift({ ...h, investigationId: inv._id });
+      });
+    }
+
+    if (data.recommendations && Array.isArray(data.recommendations)) {
+      data.recommendations.forEach(r => {
+        memoryDb.recommendations.unshift({ ...r, investigationId: inv._id });
+      });
+    }
+
+    // Store raw custom result for direct retrieve
+    if (!memoryDb.customResults) {
+      memoryDb.customResults = {};
+    }
+    memoryDb.customResults[inv._id] = data;
+
+    return inv;
+  },
+
+  getCustomResult: (id) => {
+    return memoryDb.customResults ? memoryDb.customResults[id] : null;
   }
 };
+

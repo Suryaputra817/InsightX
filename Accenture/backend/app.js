@@ -36,13 +36,14 @@ app.use((err, req, res, next) => {
 
 // Connect to DB and Start Server
 console.log(`Connecting to database at: ${mongoUri}`);
-mongoose.connect(mongoUri)
+mongoose.connect(mongoUri, { serverSelectionTimeoutMS: 2000 })
   .then(() => {
     console.log("Connected to MongoDB database.");
     app.listen(port, () => {
       console.log(`InsightX API server listening on port ${port}`);
     });
   })
+
   .catch((err) => {
     console.error("MongoDB Connection Error. Falling back to In-Memory Datastore.");
     console.error("Reason:", err.message);

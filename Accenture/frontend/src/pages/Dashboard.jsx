@@ -35,8 +35,12 @@ import {
   Line,
   ReferenceLine
 } from 'recharts';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '../services/api';
+import { DataUploadModal } from '../components/DataUploadModal';
+import { Database } from 'lucide-react';
+
+
 
 function CustomChartTooltip({ active, payload, label }) {
   if (active && payload && payload.length) {
@@ -63,6 +67,8 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [hoveredBlock, setHoveredBlock] = useState(null); // '01' | '02' | '03' | '04' | '05' | null
   const [actionStatus, setActionStatus] = useState('IDENTIFIED');
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [customResult, setCustomResult] = useState(null);
 
   useEffect(() => {
     api.getDashboard()
@@ -76,7 +82,12 @@ export default function Dashboard() {
       });
   }, []);
 
-
+  const handleAnalysisComplete = (result) => {
+    setCustomResult(result);
+    if (result && result.investigation) {
+      navigate(`/stage/02?customId=${result.investigation._id}`);
+    }
+  };
 
   if (loading) {
     return (
@@ -109,12 +120,44 @@ export default function Dashboard() {
 
   return (
     <div className="relative max-w-7xl mx-auto space-y-4 pb-10">
+      {/* Upload Business Data Hero Banner */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-cyan-950/60 via-slate-900/80 to-purple-950/60 border border-cyan-500/30 shadow-xl backdrop-blur-xl gap-4">
+        <div className="flex items-center gap-3.5">
+          <div className="p-3 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-500/30">
+            <Database className="w-6 h-6" />
+          </div>
+          <div>
+            <h2 className="text-base font-bold text-white tracking-tight flex items-center gap-2">
+              Analyze Your Business Data
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 font-semibold border border-cyan-500/30">
+                ML Pipeline Ready
+              </span>
+            </h2>
+            <p className="text-xs text-white/60">Upload CSV or Excel files to train isolated Random Forest & SHAP models with real validation metrics</p>
+          </div>
+        </div>
+        <button
+          onClick={() => setIsUploadModalOpen(true)}
+          className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 via-teal-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold text-xs shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 transition-all hover:scale-[1.02] active:scale-[0.98] shrink-0"
+        >
+          <Sparkles className="w-4 h-4" />
+          Upload Business Data
+        </button>
+      </div>
+
+      <DataUploadModal
+        isOpen={isUploadModalOpen}
+        onClose={() => setIsUploadModalOpen(false)}
+        onAnalysisComplete={handleAnalysisComplete}
+      />
+
       {/* ============================================================
           5-BLOCK INTELLIGENCE CANVAS
           Row 1: 01 DASHBOARD | 02 INVESTIGATION | 03 EVIDENCE
           Row 2: 04 RECOMMENDATION | 05 ACTION
           ============================================================ */}
       <div className="space-y-4">
+
         
         {/* ROW 1: 3 BLOCKS */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">

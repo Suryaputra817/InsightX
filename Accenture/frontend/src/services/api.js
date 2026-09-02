@@ -8,11 +8,33 @@ const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const client = axios.create({
   baseURL: API_BASE,
-  timeout: 5000
+  timeout: 120000
 });
+
 
 // Robust wrapper that falls back to seed data if server is offline
 export const api = {
+  detectSchema: async (file) => {
+    const formData = new FormData();
+    formData.append('dataset', file);
+    const res = await client.post('/upload/detect', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    return res.data.data;
+  },
+
+  analyzeDataset: async (file, columnMapping) => {
+    const formData = new FormData();
+    formData.append('dataset', file);
+    if (columnMapping) {
+      formData.append('columnMapping', JSON.stringify(columnMapping));
+    }
+    const res = await client.post('/upload/analyze', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    return res.data.data;
+  },
+
   getDashboard: async () => {
     try {
       const res = await client.get('/dashboard');

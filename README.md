@@ -1,204 +1,323 @@
-# InsightX - AI Business Investigator
+# InsightX — AI Business Investigator
 
-> **Your dashboard shows what changed. InsightX helps explain why, what to do next, and how certain to be.**
+> **"Your dashboard shows what changed. InsightX explains WHY — with real ML evidence, ranked drivers, and actionable recommendations."**
 
-InsightX is a hackathon prototype for the **BusinessIntelligence.ai** challenge track. It turns a material KPI movement into an evidence-backed investigation: it pinpoints the affected segment, compares competing explanations, communicates confidence and uncertainty, and converts the outcome into owner-assigned actions.
-
-**Live prototype:** [Open InsightX](https://insightx-business-investigator.vercel.app)  
-**API:** [Render API](https://insightx-api-i3qa.onrender.com)  
-**ML service health:** [Render ML service](https://insightx-ml.onrender.com/health)
-
-## The problem
-
-Business teams usually discover a KPI movement in a dashboard, then spend hours stitching together exports, operational data, and tribal knowledge to understand it. That workflow is slow, difficult to audit, and often produces a confident narrative without enough evidence.
-
-InsightX is designed to shorten the path from **signal** to **responsible action**. Rather than treating an LLM as a source of quantitative truth, the prototype keeps quantitative findings, evidence, confidence, and recommended actions explicit and inspectable.
-
-## What the prototype demonstrates
-
-The NovaMart scenario simulates a material revenue decline:
-
-| Signal | Demonstrated result |
-| --- | --- |
-| KPI anomaly | Revenue is ₹42.8M against an expected ₹46.6M (-8.2%) |
-| Segmentation | North region is the principal regional contributor (-17.4%) |
-| Cross-functional evidence | Delivery delays, delayed orders, complaints, sales, and market signals |
-| Ranked explanation | Logistics disruption is **SUPPORTED** at 87% confidence |
-| Alternative hypothesis | Competitor pricing is labelled **CORRELATED**, not causal proof |
-| Decision loop | Critical recommendations become actions with owner, priority, status, and timeline |
-
-### Core user journey
-
-1. Open the dashboard and identify a material revenue movement.
-2. Start an investigation to view the metric, regional, customer, and product contribution breakdowns.
-3. Inspect supporting and contradicting evidence for each hypothesis.
-4. Review confidence and causal-status labels before acting.
-5. Create a recommendation-backed action, assign an owner, and move it through `OPEN`, `INVESTIGATING`, and `RESOLVED`.
-
-## Challenge alignment
-
-| Challenge objective | InsightX response |
-| --- | --- |
-| Detect and prioritise KPI movements | Threshold-based anomaly identification with severity in the dashboard |
-| Reconcile business context | A simulated unified evidence layer across logistics, orders, CRM, sales, and market intelligence |
-| Rank explanatory drivers | Dimension contribution analysis and ranked hypotheses |
-| Generate traceable narratives | Every conclusion is paired with visible evidence, a confidence value, and causal-status language |
-| Abstain under uncertainty | `CORRELATED` and `INSUFFICIENT_EVIDENCE` states prevent overclaiming causal certainty |
-| Recommend practical actions | Action cards include a controllable response, owner, priority, reason, and confidence |
-| Learn from feedback | Action status/timeline is persisted by the API; analyst corrections are a planned extension |
-| Work within constraints | Deterministic local fallback enables a reliable demo without an LLM dependency |
-
-## Architecture
-
-```text
-React + Vite decision workspace
-        |
-        | HTTPS / JSON
-        v
-Node.js + Express investigation API
-        |
-        +-- MongoDB via Mongoose (optional persistence)
-        |
-        +-- In-memory NovaMart datastore (zero-config demo fallback)
-        |
-        +-- Optional FastAPI ML service (model exploration and scoring)
-```
-
-The deployed web experience communicates with the Express API. If MongoDB is unavailable, the API intentionally falls back to deterministic seeded data so the demonstration remains reproducible.
-
-## Technology stack
-
-- **Frontend:** React 19, Vite, Tailwind CSS, Recharts, Framer Motion, React Router
-- **Backend:** Node.js, Express, Mongoose, CORS
-- **Data:** MongoDB or a deterministic in-memory datastore for the prototype
-- **ML exploration:** FastAPI, scikit-learn, XGBoost, SHAP, pandas, NumPy
-- **Deployment:** Vercel (frontend) and Render (API/ML service)
-
-## Repository structure
-
-```text
-Accenture/
-├── frontend/                 # React decision workspace
-│   └── src/
-│       ├── pages/            # Dashboard, investigations, evidence, actions
-│       ├── components/       # Shared layout and visual components
-│       └── services/api.js   # API client and reliable local fallback
-├── backend/                  # Express API
-│   ├── controllers/          # Dashboard, investigation, and action flows
-│   ├── models/               # Mongoose schemas
-│   ├── services/             # Analysis, evidence, hypothesis, recommendations
-│   └── utils/memoryDb.js     # Deterministic demo dataset
-└── render.yaml               # Render API deployment definition
-```
-
-The accompanying repository also includes an `ML/` FastAPI service and pre-trained prototype models.
-
-## Run locally
-
-### Prerequisites
-
-- Node.js 18 or later
-- npm
-- Optional: MongoDB local instance or Atlas URI
-- Optional ML runtime: Python 3.10+ and pip
-
-### 1. Start the API
-
-```bash
-cd backend
-npm ci
-npm start
-```
-
-The API runs at `http://localhost:5000`. It will use the built-in NovaMart datastore if `MONGO_URI` is not available.
-
-### 2. Start the frontend
-
-In a second terminal:
-
-```bash
-cd frontend
-npm ci
-npm run dev
-```
-
-Open `http://localhost:5173`.
-
-### 3. Optional MongoDB persistence
-
-Create `backend/.env`:
-
-```env
-PORT=5000
-MONGO_URI=mongodb+srv://<user>:<password>@<cluster>/insightx
-LLM_API_KEY=
-```
-
-To populate a **dedicated, disposable** `insightx` database with the NovaMart scenario:
-
-```bash
-cd backend
-npm run seed
-```
-
-> Warning: `npm run seed` clears the prototype collections before inserting demo data. Never point it at a shared or production database.
-
-### 4. Configure a hosted frontend
-
-Set the API base URL when building for Vercel or another host:
-
-```env
-VITE_API_URL=https://your-api.onrender.com/api
-```
-
-## API surface
-
-| Endpoint | Purpose |
-| --- | --- |
-| `GET /api/dashboard` | KPI summary and active investigations |
-| `GET /api/investigations` | Investigation list |
-| `GET /api/investigations/:id` | Investigation detail |
-| `POST /api/investigations/:id/run` | Complete a prototype investigation |
-| `GET /api/investigations/:id/evidence` | Evidence with optional source/strength filters |
-| `GET /api/investigations/:id/hypotheses` | Ranked hypotheses |
-| `GET /api/recommendations` | Recommendation queue |
-| `GET/POST/PATCH /api/actions` | Create and manage action status |
-
-## Trust, safety, and responsible BI
-
-This project is a prototype and intentionally makes its limits visible:
-
-- **Evidence is not causality.** `SUPPORTED` indicates available evidence supports an explanation; it does not claim experimental proof.
-- **Confidence is decision support, not a truth guarantee.** Low or conflicting signals should trigger clarification and analyst review.
-- **Demo data is synthetic.** NovaMart records are illustrative and must not be used for operational decisions.
-- **Role-based security is a next-step capability.** The prototype identifies its importance, but it does not yet implement production-grade SSO, row/column-level access control, or data masking.
-- **LLM use is optional.** The current experience works deterministically without sending business data to an LLM.
-
-## Known prototype boundaries and next steps
-
-| Prototype today | Production-ready next step |
-| --- | --- |
-| One curated multi-factor investigation | Connect governed source systems and support multiple KPI contracts |
-| Simulated evidence freshness and lineage | Capture source timestamps, transformations, metric definitions, and lineage automatically |
-| Shared decision workspace | Persona-specific narratives for executives, analysts, and operations owners |
-| Manual action feedback | Capture acceptance, overrides, outcomes, and feedback-driven calibration |
-| Optional ML service | Validate and integrate models through versioned APIs, monitoring, and feature contracts |
-| Open prototype API | Add SSO, RBAC/ABAC, audit logs, encryption, retention, and secure secret management |
-
-## Demo script for judges
-
-1. Start at the landing page and select **Start Investigation**.
-2. On the dashboard, call out the -8.2% revenue deviation.
-3. Navigate to the investigation and show North, Enterprise, and Product A as the strongest affected segments.
-4. Open Evidence Explorer and contrast logistics evidence with the weaker competitor-pricing explanation.
-5. Explain the difference between **SUPPORTED**, **CORRELATED**, and **INSUFFICIENT EVIDENCE**.
-6. Create the critical operations action and update its status in Action Center.
-7. Close by showing the architecture and the production roadmap for data governance, feedback, and persona-specific delivery.
-
-## Team
-
-Built as an Accenture Innovation Challenge hackathon prototype.
+InsightX is an AI-powered Business Intelligence Investigator built for the **Accenture Innovation Challenge Hackathon**. It turns any KPI anomaly into a structured, evidence-backed investigation — with a custom ML pipeline that trains on your own business data in real time.
 
 ---
 
-**Disclaimer:** InsightX is a proof of concept built with simulated data. It is not a production decision system and does not establish causal relationships or replace domain-expert judgement.
+## 🚀 Live Demo
+
+| Service | URL |
+|---|---|
+| **Frontend** | `http://localhost:5173` (local) |
+| **Backend API** | `http://localhost:5000` (local) |
+| **ML Microservice** | `http://localhost:8000` (local) |
+
+---
+
+## 🎯 The Problem
+
+Business teams discover a KPI drop in a dashboard — then spend **hours** manually stitching exports, operations data, and tribal knowledge to understand it.
+
+InsightX shortens the path from **signal → root cause → action** by:
+- Auto-detecting KPI anomalies
+- Running a SHAP-attributed ML investigation
+- Ranking drivers by causal evidence strength
+- Generating actionable tickets with owner, priority, and checklist
+
+---
+
+## ✨ What's Inside — Full Feature List
+
+### 1. 🏠 Landing Page
+- Animated hero with product pitch and feature overview
+- "Start Investigation" CTA that routes to the Intelligence Canvas
+- Premium dark-mode UI with glassmorphism cards and gradient accents
+
+### 2. 📊 Intelligence Canvas (Dashboard)
+- **5D Motion Background** — 5 independent animated depth layers:
+  - Animated indigo perspective grid (pulsing)
+  - 3 large far-drifting color orbs (22–34s cycles)
+  - 2 medium nearer orbs with rotation
+  - 22 floating glowing particles
+  - Scanline texture overlay + depth vignette
+- **Revenue KPI card** — Actual vs Expected with trend indicator
+- **5 interactive investigation canvas blocks** — each maps to a stage
+- **Analyze Your Business Data banner** — ML Upload CTA
+- Hover micro-animations, opacity transitions on each block
+
+### 3. 🔍 5-Stage Investigation Pipeline
+Each stage is a dedicated page with full ML-driven or NovaMart fallback data:
+
+| Stage | Title | What It Shows |
+|---|---|---|
+| **01** | Dashboard | KPI metrics, SHAP driver bar charts, ML validation metrics |
+| **02** | Investigation | Root cause decomposition chain, feature impact breakdown |
+| **03** | Evidence | SHAP Evidence Signal Matrix (clickable cards), classification tiers |
+| **04** | Recommendation | Hypothesis probability analysis, ML recommendations, recovery simulator |
+| **05** | Action | ML-derived action ticket, interactive workflow simulation, action checklist |
+
+When a custom dataset is loaded, **all 5 stages show real ML-generated data** from your uploaded file — not hardcoded NovaMart demo data.
+
+### 4. 🤖 Custom Dataset ML Upload (New Feature)
+- **Upload** any `.csv`, `.xlsx`, or `.xls` business file
+- **4-Step modal wizard**:
+  1. File selection & validation
+  2. Auto schema detection (column type inference)
+  3. Column mapping UI (target KPI, orders, operational metric, region, date)
+  4. Training progress & completion routing
+- **ML Pipeline** (trained fresh on every upload):
+  - `RandomForestRegressor` — 40 estimators, parallel CPU training
+  - `IsolationForest` — anomaly detection
+  - `shap.TreeExplainer` — SHAP feature attribution
+  - Train/test split, R² score, RMSE, MAE, F1 evaluation
+  - Auto sub-samples up to 2,500 rows for instant response
+- **Results render across all 5 investigation stages automatically**
+
+### 5. 📦 InsightX Test Data Pack
+Pre-built datasets in `InsightX_Test_Data_Pack/` for immediate testing:
+
+| Dataset | File | Focus |
+|---|---|---|
+| IBM Telco Churn | `telco_style_churn.csv` / `.xlsx` | Customer churn, monthly charges, CLTV |
+| Walmart Retail | `walmart_style_business.csv` / `.xlsx` | Revenue, profit, delivery delay, orders |
+
+### 6. 🧠 NovaMart Built-in Scenario (Demo Case)
+Pre-loaded investigation showing:
+- Revenue ₹42.8M vs expected ₹46.6M (–8.2%)
+- North region: –17.4% — sole anomaly
+- 6 telemetry evidence signals (Delivery Delays +31%, Enterprise Churn +23%, etc.)
+- Hypothesis: **Logistics Disruption — SUPPORTED at 82% confidence**
+- Complete action ticket, workflow simulation, recovery projector
+
+### 7. 🔌 Backend API
+| Endpoint | Purpose |
+|---|---|
+| `GET /api/dashboard` | KPI summary and active investigations |
+| `GET /api/investigations` | Investigation list |
+| `GET /api/investigations/:id` | Investigation + custom ML result by ID |
+| `POST /api/investigations/:id/run` | Run investigation pipeline |
+| `GET /api/investigations/:id/evidence` | Evidence with source/strength filters |
+| `GET /api/investigations/:id/hypotheses` | Ranked hypotheses |
+| `GET /api/recommendations` | Recommendation queue |
+| `GET/POST/PATCH /api/actions` | Manage action tickets |
+| `POST /api/upload/detect` | Auto-detect CSV/Excel schema |
+| `POST /api/upload/analyze` | Full ML training + investigation generation |
+
+### 8. ⚡ ML Microservice (FastAPI — Port 8000)
+| Endpoint | Purpose |
+|---|---|
+| `GET /health` | ML service health check |
+| `POST /investigate` | NovaMart pre-trained model inference |
+| `POST /upload/detect` | Schema detection for uploaded dataset |
+| `POST /upload/analyze` | Full custom dataset training + SHAP analysis |
+
+---
+
+## 🏗️ Architecture
+
+```
+React 19 + Vite (Frontend — Port 5173)
+        |
+        | REST API / JSON
+        v
+Express.js API (Backend — Port 5000)
+        |
+        +── MongoDB (optional, 2s connection timeout)
+        |
+        +── In-Memory NovaMart Datastore (instant zero-config fallback)
+        |
+        +── Multer file upload middleware
+        |
+        | Proxied HTTP to ML service
+        v
+FastAPI ML Microservice (Python — Port 8000)
+        |
+        +── RandomForestRegressor (scikit-learn)
+        +── IsolationForest anomaly detector
+        +── SHAP TreeExplainer (feature attribution)
+        +── pandas + NumPy preprocessing
+        +── openpyxl / xlrd (Excel support)
+```
+
+---
+
+## 💻 Technology Stack
+
+| Layer | Technology |
+|---|---|
+| **Frontend** | React 19, Vite, Tailwind CSS v4, Framer Motion, Recharts, React Router v6, Lucide React |
+| **Backend** | Node.js, Express, Mongoose, Multer, Axios, csv-parser, xlsx |
+| **ML Microservice** | FastAPI, Uvicorn, scikit-learn, SHAP, XGBoost, pandas, NumPy, openpyxl, python-multipart |
+| **Database** | MongoDB (optional) + In-memory deterministic datastore |
+| **Deployment** | Vercel (frontend), Render (backend + ML service) |
+
+---
+
+## 📁 Repository Structure
+
+```
+InsightX-main/
+├── Accenture/
+│   ├── frontend/
+│   │   └── src/
+│   │       ├── pages/
+│   │       │   ├── Landing.jsx           # Hero landing page
+│   │       │   ├── Dashboard.jsx         # 5D canvas + ML upload banner
+│   │       │   ├── StageDetail.jsx       # All 5 investigation stages (ML-driven)
+│   │       │   ├── InvestigationDetail.jsx
+│   │       │   └── ...
+│   │       ├── components/
+│   │       │   ├── Layout.jsx            # Full-screen layout (no header)
+│   │       │   ├── Reference3DBackground.jsx  # 5D motion background
+│   │       │   ├── DataUploadModal.jsx   # 4-step ML upload wizard
+│   │       │   ├── SlidingPageContainer.jsx
+│   │       │   ├── FloatingNavigation.jsx
+│   │       │   └── ...
+│   │       └── services/api.js           # Axios client + NovaMart fallback
+│   └── backend/
+│       ├── app.js                        # Express entry + MongoDB fallback
+│       ├── controllers/
+│       │   ├── dashboardController.js
+│       │   ├── investigationController.js
+│       │   ├── uploadController.js       # CSV/Excel parsing + ML proxy
+│       │   └── ...
+│       ├── services/
+│       │   └── mlService.js              # FastAPI HTTP client (120s timeout)
+│       ├── routes/api.js                 # All routes + Multer upload
+│       ├── models/                       # Mongoose schemas
+│       └── utils/memoryDb.js             # In-memory demo datastore
+├── ML/
+│   ├── ml_service/
+│   │   └── app.py                        # FastAPI app — all ML endpoints
+│   ├── models/                           # Pre-trained .pkl model files
+│   ├── training/                         # Training scripts
+│   ├── test_datasets/
+│   │   ├── sample_logistics_issue.csv
+│   │   └── sample_pricing_churn.csv
+│   └── requirements.txt
+├── InsightX_Test_Data_Pack/
+│   ├── IBM_Telco_Churn/
+│   │   ├── telco_style_churn.csv         # 7,000+ rows churn dataset
+│   │   └── telco_style_churn.xlsx
+│   └── Walmart_Retail/
+│       ├── walmart_style_business.csv    # 5,000 rows retail dataset
+│       └── walmart_style_business.xlsx
+└── README.md
+```
+
+---
+
+## ▶️ Run Locally
+
+### Prerequisites
+- Node.js 18+
+- Python 3.10+
+- npm & pip
+
+### Step 1 — Install Python ML Dependencies
+```bash
+cd ML
+pip install -r requirements.txt
+```
+
+### Step 2 — Install Backend Dependencies
+```bash
+cd Accenture/backend
+npm install
+```
+
+### Step 3 — Install Frontend Dependencies
+```bash
+cd Accenture/frontend
+npm install
+```
+
+### Step 4 — Start All 3 Services (3 terminals)
+
+**Terminal 1 — ML Microservice:**
+```bash
+cd ML
+py -3 -m uvicorn ml_service.app:app --host 0.0.0.0 --port 8000
+```
+
+**Terminal 2 — Backend API:**
+```bash
+cd Accenture/backend
+npm start
+```
+
+**Terminal 3 — Frontend:**
+```bash
+cd Accenture/frontend
+npm run dev
+```
+
+Open **`http://localhost:5173`** in your browser.
+
+> **No MongoDB needed.** The backend instantly falls back to the built-in NovaMart in-memory datastore if MongoDB is not running.
+
+### Optional — MongoDB Persistence
+Create `Accenture/backend/.env`:
+```env
+PORT=5000
+MONGO_URI=mongodb+srv://<user>:<password>@<cluster>/insightx
+ML_SERVICE_URL=http://localhost:8000
+```
+
+---
+
+## 🧪 Testing the ML Pipeline
+
+Upload any of the test datasets via the **"Upload Business Data"** button on the dashboard, or run the verification script directly:
+
+```bash
+cd ML
+py -3 verify_ml_independence.py
+```
+
+**Sample output:**
+```
+>> Walmart Retail
+   Rows=2500  Target=revenue  Change=+2.38%
+   R2=0.861   RMSE=1633.43   Time=0.54s
+   #1 SHAP Driver -> 'profit'  impact=2371.53
+   Causal Status -> SUPPORTED
+
+[PASS] Each dataset produced a DIFFERENT top SHAP driver.
+[PASS] R2 scores are DISTINCT across datasets (not hardcoded).
+```
+
+---
+
+## 🤝 Trust, Safety & Responsible BI
+
+- **Evidence ≠ Causality** — `SUPPORTED` means evidence supports an explanation, not experimental proof
+- **CORRELATED / INSUFFICIENT_EVIDENCE** states prevent overclaiming
+- **All ML models are trained fresh** on each uploaded dataset — no global state shared between users
+- **Demo data is synthetic** — NovaMart records are illustrative only
+- **LLM-free** — entire pipeline is deterministic, interpretable ML — no black-box LLM dependency
+
+---
+
+## 🗺️ Production Roadmap
+
+| Prototype Today | Production Next Step |
+|---|---|
+| Single NovaMart demo investigation | Connect governed source systems, multiple KPI contracts |
+| Synthetic evidence | Capture real source timestamps, lineage, metric definitions |
+| In-memory fallback | Full MongoDB Atlas with RBAC and row-level access control |
+| Basic ML pipeline | Versioned model registry, drift monitoring, feature contracts |
+| Open REST API | Add SSO, audit logs, encryption, rate limiting |
+| CSV/Excel upload | Live database connectors (BigQuery, Snowflake, Redshift) |
+
+---
+
+## 👥 Team
+
+Built for the **Accenture Innovation Challenge Hackathon**.
+
+---
+
+**Disclaimer:** InsightX is a proof of concept built with simulated data. It is not a production decision system and does not establish causal relationships or replace domain-expert judgment.

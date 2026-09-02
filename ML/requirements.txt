@@ -1,4 +1,4 @@
-﻿fastapi
+fastapi
 uvicorn
 pandas
 numpy
@@ -6,3 +6,6 @@ scikit-learn
 xgboost
 shap
 joblib
+openpyxl
+xlrd
+python-multipart

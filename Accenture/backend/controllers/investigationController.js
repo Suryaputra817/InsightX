@@ -26,6 +26,11 @@ exports.getInvestigations = async (req, res, next) => {
 // Get single investigation detail
 exports.getInvestigationById = async (req, res, next) => {
   try {
+    const customResult = memoryDb.getCustomResult(req.params.id);
+    if (customResult) {
+      return res.json({ success: true, data: customResult });
+    }
+
     if (isConnected()) {
       const inv = await Investigation.findById(req.params.id);
       if (!inv) {
@@ -43,6 +48,7 @@ exports.getInvestigationById = async (req, res, next) => {
     next(error);
   }
 };
+
 
 // Run / execute investigation engine
 exports.runInvestigation = async (req, res, next) => {
